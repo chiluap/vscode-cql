@@ -131,6 +131,13 @@
           "default": "127.0.0.1",
           "description": "Address of Cassandra cluster to connect to."
         },
+        "cql.auth": {
+          "type": "object",
+          "default": {
+            "provider": "NONE"
+          },
+          "description": "Cassandra authentication configuration, consiting of provider, user and password."
+        },
         "cql.port": {
           "type": "integer",
           "default": 9042,
@@ -185,7 +192,7 @@
   },
   "dependencies": {
     "@types/uuid": "^3.0.0",
-    "cassandra-driver": "^3.0.2",
+    "cassandra-driver": "^3.4.1",
     "util": "^0.10.3",
     "uuid": "^3.1.0"
   }

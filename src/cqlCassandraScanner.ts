@@ -44,22 +44,47 @@ export class CqlCassandraScanner {
 
     private getDefaultClient() {
         console.log("getting default cassandra client.");
+        let client = new cassandra.Client(this.getCassandraConnectionOptions());
+        return client;
+    }
+
+    private getCassandraConnectionOptions() {
         let cassandraAddress = vscode.workspace.getConfiguration("cql")["address"];
         let cassandraPort = vscode.workspace.getConfiguration("cql")["port"];
 
         let cassandraConnectionOptions = vscode.workspace.getConfiguration("cql")["connection"];
 
         let clientOptions = !!cassandraConnectionOptions 
-            ? cassandraConnectionOptions 
-            : {
-                contactPoints: [cassandraAddress],
-                hosts: [cassandraAddress]
-            };
+        ? cassandraConnectionOptions 
+        : {
+            contactPoints: [cassandraAddress],
+            hosts: [cassandraAddress]
+        };
 
-        console.log("client options:", clientOptions);
+        let authProvider = this.getCassandraAuthProvider();
 
-        let client = new cassandra.Client(clientOptions);
-        return client;
+        if (!!authProvider) {
+            clientOptions.authProvider = authProvider;
+        }
+        return clientOptions;
+    }
+
+    private getCassandraAuthProvider() {
+        console.log("getting cassandra auth provider.");
+        let auth = vscode.workspace.getConfiguration("cql")["auth"];
+        let authInstance = {};
+        switch (auth.provider) {
+        case 'PlainTextAuthProvider':
+            auth = new cassandra.auth.PlainTextAuthProvider(auth.user, auth.password);
+            break;
+        case 'NONE':
+            console.log('No authentication provided, trying to connect without...');
+            break;
+        default:
+            console.error('Unknown cassandra auth provider', auth.provider);
+            break;
+        }
+        return authInstance;
     }
 
     public Scan(): Promise<boolean> {
